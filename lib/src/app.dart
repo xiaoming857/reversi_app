@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:reversi_app/src/models/board.dart';
+import 'package:reversi_app/src/models/min_max.dart';
 
 
 class App extends StatefulWidget {
   @override
   _AppState createState() => _AppState();
 }
+
 
 class _AppState extends State<App> {
   StreamController<Map<Disk, int>> winDialogController = StreamController<Map<Disk, int>>();
@@ -191,11 +193,25 @@ class _AppState extends State<App> {
     }
     return InkWell(
       child: this._getIcon(disk),
-      onTap: disk != Disk.empty ? null : () {
+      onTap: disk != Disk.empty ? null : () async {
         print('$j - $i');
         this.board.put(this.diskTurn, j, i);
         this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
         this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
+        setState(() {});
+
+        await Future.delayed(Duration(seconds: 1));
+        MinMax ai = MinMax();
+        ai.minmax(board, 3, false);
+        List<int> aiChoice = ai.bestLocation;
+        if (aiChoice != null) {
+          this.board.put(this.diskTurn, aiChoice[0], aiChoice[1]);
+          this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
+          this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
+        } else {
+          this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
+          this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
+        }
         setState(() {});
       },
     );

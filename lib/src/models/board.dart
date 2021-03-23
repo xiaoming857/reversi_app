@@ -46,6 +46,14 @@ class Board {
   }
 
 
+  Board.fromBoard(Board board) {
+    this._board = [];
+    board._board.forEach((row) {
+      this._board.add(List.from(row));
+    });
+  }
+
+
   Disk inspect(int y, int x) => this._board[y][x];
 
 
@@ -61,7 +69,7 @@ class Board {
           j = y - 1; i = x;
           while (j >= 0 && this._board[j][i] == oppositeDisk) {
             if (j - 1 >= 0 && this._board[j - 1][i] == Disk.empty) {
-              possibleLocations.add([j - 1, i]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j-1 && location[1] == i)) possibleLocations.add([j - 1, i]);
               break;
             }
             j--;
@@ -71,7 +79,7 @@ class Board {
           j = y + 1; i = x;
           while (j < defaultBoardSize && this._board[j][i] == oppositeDisk) {
             if (j + 1 < defaultBoardSize && this._board[j + 1][i] == Disk.empty) {
-              possibleLocations.add([j + 1, i]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j+1 && location[1] == i)) possibleLocations.add([j + 1, i]);
               break;
             }
             j++;
@@ -81,7 +89,7 @@ class Board {
           j = y; i = x - 1;
           while (i >= 0 && this._board[j][i] == oppositeDisk) {
             if (i - 1 >= 0 && this._board[j][i - 1] == Disk.empty) {
-              possibleLocations.add([j, i - 1]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j && location[1] == i-1)) possibleLocations.add([j, i - 1]);
               break;
             }
             i--;
@@ -92,7 +100,7 @@ class Board {
           j = y; i = x + 1;
           while (i < defaultBoardSize && this._board[j][i] == oppositeDisk) {
             if (i + 1 < defaultBoardSize && this._board[j][i + 1] == Disk.empty) {
-              possibleLocations.add([j, i + 1]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j && location[1] == i+1)) possibleLocations.add([j, i + 1]);
               break;
             }
             i++;
@@ -103,7 +111,7 @@ class Board {
           j = y - 1; i = x - 1;
           while (j >= 0 && i >= 0 && this._board[j][i] == oppositeDisk) {
             if (j - 1 >= 0 && i - 1 >= 0 && this._board[j - 1][i - 1] == Disk.empty) {
-              possibleLocations.add([j - 1, i - 1]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j-1 && location[1] == i-1)) possibleLocations.add([j - 1, i - 1]);
               break;
             }
             j--;
@@ -115,7 +123,7 @@ class Board {
           j = y - 1; i = x + 1;
           while (j >= 0 && i < defaultBoardSize && this._board[j][i] == oppositeDisk) {
             if (j - 1 >= 0 && i + 1 < defaultBoardSize && this._board[j - 1][i + 1] == Disk.empty) {
-              possibleLocations.add([j - 1, i + 1]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j-1 && location[1] == i+1)) possibleLocations.add([j - 1, i + 1]);
               break;
             }
             j--;
@@ -127,7 +135,7 @@ class Board {
           j = y + 1; i = x + 1;
           while (j < defaultBoardSize && i < defaultBoardSize && this._board[j][i] == oppositeDisk) {
             if (j + 1 < defaultBoardSize && i + 1 < defaultBoardSize && this._board[j + 1][i + 1] == Disk.empty) {
-              possibleLocations.add([j + 1, i + 1]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j+1 && location[1] == i+1)) possibleLocations.add([j + 1, i + 1]);
               break;
             }
             j++;
@@ -138,7 +146,7 @@ class Board {
           j = y + 1; i = x - 1;
           while (j < defaultBoardSize && i >= 0 && this._board[j][i] == oppositeDisk) {
             if (j + 1 < defaultBoardSize && i - 1 >= 0 && this._board[j + 1][i - 1] == Disk.empty) {
-              possibleLocations.add([j + 1, i - 1]);
+              if (!possibleLocations.any((List<int> location) => location[0] == j+1 && location[1] == i-1)) possibleLocations.add([j + 1, i - 1]);
               break;
             }
             j++;
@@ -180,8 +188,8 @@ class Board {
     j = y + 1; i = x;
     while (j < defaultBoardSize && this._board[j][i] != Disk.empty) {
       if (this._board[j][i] == disk) {
+        j--;
         while (j > y) {
-          j--;
           this._board[j][i] = disk;
           j--;
         }
@@ -195,8 +203,8 @@ class Board {
     j = y; i = x - 1;
     while (i >= 0 && this._board[j][i] != Disk.empty) {
       if (this._board[j][i] == disk) {
+        i++;
         while (i < x) {
-          i++;
           this._board[j][i] = disk;
           i++;
         }
@@ -281,5 +289,24 @@ class Board {
       }
       j++; i--;
     }
+  }
+
+
+  @override
+  String toString() {
+    String str = '';
+    this._board.forEach((rows) {
+      rows.forEach((Disk disk) {
+        if (disk == Disk.black) {
+          str += 'X ';
+        } else if (disk == Disk.white) {
+          str += 'O ';
+        } else {
+          str += '- ';
+        }
+      });
+      str += '\n';
+    });
+    return str;
   }
 }
