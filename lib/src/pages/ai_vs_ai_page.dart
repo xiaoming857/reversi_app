@@ -16,6 +16,8 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
   final int boardSize = 8;
   Board board = Board();
   Disk diskTurn = Disk.black;
+  bool isPlay = false;
+  bool isFinished = false;
   List<List<int>> possibleLocations;
 
 
@@ -27,7 +29,7 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
       String content = 'Draw!';
       if (boardInfo[Disk.black] > boardInfo[Disk.white]) content = 'Black Wins!';
       else if (boardInfo[Disk.black] < boardInfo[Disk.white])content = 'White Wins!';
-
+      this.isFinished = true;
       showDialog(context: context, builder: (BuildContext context) => AlertDialog(
         title: Text('Game!'),
         content: Text(content),
@@ -63,16 +65,11 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
 
         actions: [
           IconButton(
-              icon: Icon(
-                  Icons.refresh_sharp
-              ),
+            icon: Icon(
+                Icons.refresh_sharp
+            ),
 
-              onPressed: () {
-                this.board = Board();
-                this.diskTurn = Disk.black;
-                this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
-                setState(() {});
-              }
+            onPressed: this._onRestart,
           ),
         ],
       ),
@@ -102,8 +99,8 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
                             Text(
                               '${boardInfo[Disk.black]}',
                               style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold
                               ),
                             ),
                             Text('Black Score'),
@@ -116,8 +113,8 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
                             Text(
                               '${boardInfo[Disk.white]}',
                               style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold
                               ),
                             ),
                             Text('White Score'),
@@ -186,10 +183,24 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
           ),
 
 
+          this.isPlay ? SizedBox() : Container(
+            color: Colors.white.withOpacity(0.5),
+            child: Center(
+              child: Icon(
+                Icons.play_circle_outline,
+                color: Colors.blueAccent,
+                size: 108,
+              ),
+            ),
+          ),
+
+
           SizedBox.expand(
             child: GestureDetector(
-              onTap: () {
-
+              onTap: () async {
+                this.isPlay = !isPlay;
+                setState(() {});
+                this.run();
               },
             ),
           ),
@@ -205,30 +216,8 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
     if (disk == Disk.empty && !isPossibleLocation) {
       return SizedBox();
     }
-    return InkWell(
-      child: this._getIcon(disk),
-      onTap: (disk != Disk.empty || this.diskTurn == Disk.white) ? null : () async {
-        print('$j - $i');
-        this.board.put(this.diskTurn, j, i);
-        this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
-        this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
-        setState(() {});
 
-        await Future.delayed(Duration(seconds: 1));
-        MinMax ai = MinMax();
-        ai.minmax(board, 4, false);
-        List<int> aiChoice = ai.bestLocation;
-        if (aiChoice != null) {
-          this.board.put(this.diskTurn, aiChoice[0], aiChoice[1]);
-          this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
-          this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
-        } else {
-          this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
-          this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
-        }
-        setState(() {});
-      },
-    );
+    return this._getIcon(disk);
   }
 
 
@@ -250,5 +239,34 @@ class _AiVsAiPageState extends State<AiVsAiPage> {
         color: Colors.black45,
       );
     }
+  }
+
+
+  void run() async {
+    while(this.isPlay && !this.isFinished) {
+      MinMax ai = MinMax();
+      ai.minmax(board, 4, (this.diskTurn == Disk.black) ? true : false);
+      List<int> aiChoice = ai.bestLocation;
+      if (aiChoice != null) {
+        this.board.put(this.diskTurn, aiChoice[0], aiChoice[1]);
+        this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
+        this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
+      } else {
+        this.diskTurn = (this.diskTurn == Disk.black) ? Disk.white : Disk.black;
+        this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
+      }
+      setState(() {});
+      await Future.delayed(Duration(seconds: 1));
+    }
+  }
+
+
+  void _onRestart() {
+    this.board = Board();
+    this.diskTurn = Disk.black;
+    this.isFinished = false;
+    this.isPlay = false;
+    this.possibleLocations = this.board.findPossibleLocations(this.diskTurn);
+    setState(() {});
   }
 }
