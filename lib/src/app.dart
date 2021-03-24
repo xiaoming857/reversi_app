@@ -202,7 +202,7 @@ class _AppState extends State<App> {
 
         await Future.delayed(Duration(seconds: 1));
         MinMax ai = MinMax();
-        ai.minmax(board, 3, false);
+        ai.minmax(board, 4, false);
         List<int> aiChoice = ai.bestLocation;
         if (aiChoice != null) {
           this.board.put(this.diskTurn, aiChoice[0], aiChoice[1]);
